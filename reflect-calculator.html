@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reflect Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #17171a;
+    --surface2: #1f1f23;
+    --border: #2a2a30;
+    --border2: #38383f;
+    --text: #f0ede8;
+    --muted: #7a7880;
+    --accent: #c8a96e;
+    --accent2: #e8c98a;
+    --reflect: #1c1c22;
+    --reflect-border: #2e2b3a;
+    --danger: #e07070;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,169,110,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,169,110,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 2rem 5rem;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 3rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2rem;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .title-block h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 2.8rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: var(--text);
+  }
+
+  .title-block h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .title-block p {
+    margin-top: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Setting */
+  .setting-block {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.75rem 1.25rem;
+    border-radius: 4px;
+    margin-top: 1.5rem;
+  }
+
+  .setting-block label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .setting-block input[type=number] {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 500;
+    width: 80px;
+    padding: 0.4rem 0.6rem;
+    border-radius: 3px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .setting-block input[type=number]:focus {
+    border-color: var(--accent);
+  }
+
+  /* Summary metrics */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+  }
+
+  .metric {
+    background: var(--surface);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .metric-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .metric-value {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .metric-value.accent {
+    color: var(--accent2);
+  }
+
+  /* Table */
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  td {
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  tbody tr { background: var(--surface); transition: background 0.1s; }
+  tbody tr:hover { background: var(--surface2); }
+
+  tbody tr.reflect-row { background: var(--reflect); border-left: 2px solid var(--accent); }
+  tbody tr.reflect-row:hover { background: #22222a; }
+
+  td input[type=text] {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    width: 140px;
+    padding: 2px 0;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  td input[type=text]:focus { border-bottom-color: var(--accent); }
+
+  td input[type=number] {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid transparent;
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    width: 70px;
+    padding: 2px 4px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  td input[type=number]:focus { border-bottom-color: var(--accent); }
+
+  .computed { color: var(--muted); }
+  .computed.positive { color: var(--accent); }
+
+  .remove-btn {
+    background: none;
+    border: none;
+    color: var(--border2);
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px 4px;
+    border-radius: 2px;
+    transition: color 0.15s;
+    font-family: 'DM Mono', monospace;
+  }
+  .remove-btn:hover { color: var(--danger); }
+
+  /* Add player */
+  .add-btn {
+    background: none;
+    border: 1px dashed var(--border2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s;
+    margin-bottom: 2.5rem;
+  }
+  .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Summary section */
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1px;
+  }
+
+  .summary-card {
+    background: var(--surface);
+    padding: 1rem 1.25rem;
+  }
+
+  .summary-card .s-label {
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+  }
+
+  .summary-card .s-value {
+    font-family: 'Fraunces', serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .summary-card .s-value.highlight { color: var(--accent2); }
+
+  /* number input arrows removal */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  input[type=number] { -moz-appearance: textfield; }
+
+  @media (max-width: 600px) {
+    .metrics-row { grid-template-columns: 1fr; }
+    .page { padding: 1.5rem 1rem 3rem; }
+    .title-block h1 { font-size: 2rem; }
+    td input[type=text] { width: 90px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="header-top">
+      <div class="title-block">
+        <h1>Re<em>fl</em>ect</h1>
+        <p>Trade goods &amp; commodities calculator</p>
+      </div>
+    </div>
+    <div class="setting-block">
+      <label>Reflect player commodity value</label>
+      <input type="number" id="commValue" value="0" min="0" step="1" oninput="recalc()">
+    </div>
+  </header>
+
+  <div class="metrics-row">
+    <div class="metric">
+      <span class="metric-label">Total initial trade goods</span>
+      <span class="metric-value" id="mInitial">0</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">Total final value</span>
+      <span class="metric-value accent" id="mTotalFinalValue">0</span>
+    </div>
+    <div class="metric">
+      <span class="metric-label">Total gained</span>
+      <span class="metric-value" id="mGained">0</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table id="playerTable">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Initial trade goods</th>
+          <th>Final trade goods</th>
+          <th>Gained</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="playerBody"></tbody>
+    </table>
+  </div>
+  <button class="add-btn" onclick="addPlayer()">+ Add player</button>
+
+  <div class="section-label">Summary</div>
+
+  <div class="summary-grid" style="margin-bottom:1px;">
+    <div class="summary-card">
+      <div class="s-label">Total final trade goods</div>
+      <div class="s-value highlight" id="mFinal">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">Final commodities</div>
+      <div class="s-value highlight" id="mComm">0</div>
+    </div>
+  </div>
+
+  <div class="summary-grid" style="margin-bottom:1px;">
+    <div class="summary-card">
+      <div class="s-label">Commodity divisor</div>
+      <div class="s-value" id="commDiv">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">Full washes</div>
+      <div class="s-value" id="fullWashes">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">Remaining full commodities</div>
+      <div class="s-value" id="remComms">0</div>
+    </div>
+  </div>
+
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="s-label">Remainder trade goods</div>
+      <div class="s-value" id="remTgs">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="s-label">Remainder commodities</div>
+      <div class="s-value" id="remCommodities">0</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let players = [
+  { name: 'reflect player', initial: 0 },
+  { name: 'player 2', initial: 0 },
+  { name: 'player 3', initial: 0 },
+  { name: 'player 4', initial: 0 },
+  { name: 'player 5', initial: 0 },
+  { name: 'player 6', initial: 0 },
+  { name: 'player 7', initial: 0 },
+  { name: 'player 8', initial: 0 },
+];
+
+function addPlayer() {
+  players.push({ name: 'player ' + (players.length + 1), initial: 0 });
+  render();
+  recalc();
+}
+
+function removePlayer(i) {
+  players.splice(i, 1);
+  render();
+  recalc();
+}
+
+function render() {
+  document.getElementById('playerBody').innerHTML = players.map((p, i) => {
+    const isReflect = i === 0;
+    return `<tr class="${isReflect ? 'reflect-row' : ''}" id="row${i}">
+      <td><input type="text" value="${p.name}" oninput="players[${i}].name=this.value" placeholder="name"></td>
+      <td><input type="number" value="${p.initial}" min="0" step="1" oninput="players[${i}].initial=+this.value||0; recalc()"></td>
+      <td class="computed" id="final${i}">0</td>
+      <td class="computed" id="gained${i}">0</td>
+      <td><button class="remove-btn" onclick="removePlayer(${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function recalc() {
+  const commVal = +document.getElementById('commValue').value || 1;
+
+  let totalInitial = 0;
+  players.forEach(p => { totalInitial += p.initial || 0; });
+
+  const commDiv = Math.floor(totalInitial / commVal);
+  const fullWashes = Math.floor(commDiv / 2);
+  const remComms = fullWashes % 2 !== 0 ? 1 : 0;
+  const remainder = totalInitial - commDiv * commVal;
+  const remTgs = remComms === 0 ? 0 : remainder;
+  const remCommodities = remComms > 0 ? 0 : remainder;
+  const finalCommodities = remComms * commVal;
+  const totalFinal = totalInitial + fullWashes * commVal + remTgs;
+
+  let otherFinalSum = 0;
+  players.forEach((p, i) => {
+    if (i === 0) return;
+    otherFinalSum += Math.round(p.initial * 1.5);
+  });
+
+  const reflectFinal = totalFinal - otherFinalSum + finalCommodities;
+  const reflectGained = reflectFinal - (players[0].initial || 0);
+
+  const rf = document.getElementById('final0');
+  const rg = document.getElementById('gained0');
+  if (rf) { rf.textContent = reflectFinal; rf.className = 'computed' + (reflectGained > 0 ? ' positive' : ''); }
+  if (rg) { rg.textContent = reflectGained; rg.className = 'computed' + (reflectGained > 0 ? ' positive' : ''); }
+
+  let totalGained = reflectGained;
+  players.forEach((p, i) => {
+    if (i === 0) return;
+    const final = Math.round(p.initial * 1.5);
+    const gained = final - p.initial;
+    totalGained += gained;
+    const fEl = document.getElementById('final' + i);
+    const gEl = document.getElementById('gained' + i);
+    if (fEl) { fEl.textContent = final; fEl.className = 'computed' + (final > 0 ? ' positive' : ''); }
+    if (gEl) { gEl.textContent = gained; gEl.className = 'computed' + (gained > 0 ? ' positive' : ''); }
+  });
+
+  const totalFinalValue = totalFinal + finalCommodities;
+
+  document.getElementById('mInitial').textContent = totalInitial;
+  document.getElementById('mFinal').textContent = totalFinal;
+  document.getElementById('mTotalFinalValue').textContent = totalFinalValue;
+  document.getElementById('mGained').textContent = totalGained;
+  document.getElementById('mComm').textContent = finalCommodities;
+  document.getElementById('commDiv').textContent = commDiv;
+  document.getElementById('fullWashes').textContent = fullWashes;
+  document.getElementById('remComms').textContent = remComms;
+  document.getElementById('remTgs').textContent = remTgs;
+  document.getElementById('remCommodities').textContent = remCommodities;
+}
+
+render();
+recalc();
+</script>
+</body>
+</html>
