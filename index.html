@@ -348,8 +348,8 @@
   <header>
     <div class="header-top">
       <div class="title-block">
-        <h1><em>REFLECT</em></h1>
-        <p>Twilight's Fall Reflect pyramid scheme calculator</p>
+        <h1><em>Reflect</em></h1>
+        <p>Trade goods &amp; commodities calculator</p>
       </div>
     </div>
     <div class="setting-block">
@@ -480,7 +480,7 @@ function recalc() {
   const remTgs = remComms === 0 ? 0 : remainder;
   const remCommodities = remComms > 0 ? 0 : remainder;
   const finalCommodities = remComms * commVal;
-  const totalFinal = totalInitial + fullWashes * commVal + remTgs;
+  const totalFinal = totalInitial + fullWashes * commVal + remTgs + remCommodities;
 
   let otherFinalSum = 0;
   players.forEach((p, i) => {
