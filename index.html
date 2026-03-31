@@ -478,9 +478,9 @@ function recalc() {
   const remComms = (commDiv / 2) % 2 !== 0 ? 1 : 0;
   const remainder = totalInitial - commDiv * commVal;
   const remTgs = remComms === 0 ? 0 : remainder;
-  const remCommodities = remComms > 0 ? (remComms * commVal) : remainder;
+  const remCommodities = remComms > 0 ? commVal : remainder;
   const finalCommodities = remCommodities;
-  const totalFinal = totalInitial + fullWashes * commVal + remTgs + remCommodities;
+  const totalFinal = totalInitial + (fullWashes * commVal) + remTgs + remCommodities;
 
   let otherFinalSum = 0;
   players.forEach((p, i) => {
