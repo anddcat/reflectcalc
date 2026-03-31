@@ -475,7 +475,7 @@ function recalc() {
 
   const commDiv = Math.floor(totalInitial / commVal);
   const fullWashes = Math.floor(commDiv / 2);
-  const remComms = fullWashes % 2 !== 0 ? 1 : 0;
+  const remComms = (commDiv / 2) % 2 !== 0 ? 1 : 0;
   const remainder = totalInitial - commDiv * commVal;
   const remTgs = remComms === 0 ? 0 : remainder;
   const remCommodities = remComms > 0 ? 0 : remainder;
