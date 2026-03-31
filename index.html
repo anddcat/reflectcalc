@@ -479,7 +479,7 @@ function recalc() {
   const remainder = totalInitial - commDiv * commVal;
   const remTgs = remComms === 0 ? 0 : remainder;
   const remCommodities = remComms > 0 ? 0 : remainder;
-  const finalCommodities = remComms * commVal;
+  const finalCommodities = remCommodities * commVal;
   const totalFinal = totalInitial + fullWashes * commVal + remTgs + remCommodities;
 
   let otherFinalSum = 0;
